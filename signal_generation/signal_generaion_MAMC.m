@@ -5,24 +5,24 @@ clc;
 warning off
 
 fc=3.5; %Carrier Frequency
-fs=14;  %Sample Frequency
+fs=20;  %Sample Frequency
 fd=0.1; %Code Rate
 freqsep=0.15;  %Frequency Interval
-N_code=15;  %Number of Symbols
-length = 2000;%Final length of signals
+N_code=20;  %Number of Symbols
+length = 3500;%Final length of signals
 N_samples_m = 300000;%Number of overlapped samples
-num_classes = 10;
+num_classes = 9;
 
-fc_max = 1.15;
-fc_min = 0.85;
+fc_max = 1.1;
+fc_min = 0.9;
 
-Ac_max = 1.1;
-Ac_min = 0.9;
+Ac_max = 1.05;
+Ac_min = 0.95;
 
 snr_max = 15;
 snr_min = 0;
 max_targets = 2;
-min_targets = 1;
+min_targets = 2;
 
 max_shift = fs*N_code/fd - length;
 
@@ -36,7 +36,7 @@ for i=1:N_samples_m
     if mod(i, 2000) == 0
         fprintf('   itr=%d\n',i);
     end
-    class_i = randperm(10);
+    class_i = randperm(num_classes);
     class_i = class_i(1:idx_tar(i));
     fcc = unifrnd (fc_min, fc_max,size(class_i,2),1);
     Acc = unifrnd (Ac_min, Ac_max,size(class_i,2),1);
@@ -86,11 +86,6 @@ for i=1:N_samples_m
                 y_train(i, class_i(j))=1;
             case 9
                 yr=qam64(N_code,fcc(j),fs,fd,1);
-                yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
-                y(j,:) = yr(1, shift(j):shift(j)+length-1);
-                y_train(i, class_i(j))=1;
-            case 10
-                yr=msk(N_code,fs,fd,fcc(j),1);
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;

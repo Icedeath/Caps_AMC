@@ -142,7 +142,6 @@ if __name__ == "__main__":
     '''
     with np.load(args.dataset) as data:
         x_train = data['x_train']
-
     with np.load(args.dataset) as data:
         y_train = data['y_train']
     '''
@@ -180,4 +179,3 @@ if __name__ == "__main__":
 
     from keras.utils import plot_model
     plot_model(model, to_file='model.png',show_shapes = True)
-
