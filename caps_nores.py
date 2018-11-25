@@ -89,7 +89,7 @@ def margin_loss(y_true, y_pred, margin = 0.4, downweight = 0.5):
 def train(model, data, args):
     (x_train, y_train) = data
 
-    checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='loss', verbose=1, save_best_only=True, 
+    checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
     #model = multi_gpu_model(model, gpus=2)
@@ -122,9 +122,9 @@ if __name__ == "__main__":
                         help="Test only model")
     parser.add_argument('-l', '--load', default=0,type=int,
                         help="load weight file or not")
-    parser.add_argument('-p', '--plot', default=1,type=int,
+    parser.add_argument('-p', '--plot', default=0,type=int,
                         help="plot training loss after finished if plot==1")
-    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC.mat',
+    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_10.mat',
                         help="name of dataset that needs loading")
     parser.add_argument('-n', '--num_classes', default=10)
     parser.add_argument('-dc', '--dim_capsule', default=16)
@@ -171,11 +171,20 @@ if __name__ == "__main__":
       
     print('-'*30 + 'Begin: test' + '-'*30)
     y_pred_tr = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    
+    _, y_pred1_tr = tf.nn.top_k(y_pred_tr, 2)
+    _, y_1 = tf.nn.top_k(y_train, 2)
+    y_pred1_tr = K.eval(y_pred1_tr)
+    y_pred1_tr.sort(axis = 1)
+    y_1 = K.eval(y_1)
+    y_1.sort(axis = 1)
+    y_pred1_tr = np.reshape(y_pred1_tr, np.prod(y_pred1_tr.shape))
+    y_1 = np.reshape(y_1, np.prod(y_1.shape))
+    print('Train acc:', np.sum(y_pred1_tr == y_1)/np.float(y_1.shape[0]))
     print('-' * 30 + 'End: test' + '-' * 30)   
 
     
     
-
+'''
     from keras.utils import plot_model
     plot_model(model, to_file='model.png',show_shapes = True)
+'''

@@ -72,7 +72,7 @@ if __name__ == "__main__":
                         help="maximum shift of mnist images before adding them together")
     parser.add_argument('-l', '--length', default=3000, type=int,
                         help="length of signal")
-    parser.add_argument('-ds', '--data', default='./samples/test10_15.mat',
+    parser.add_argument('-ds', '--data', default='./samples/test0.mat',
                         help="maximum shift of mnist images before adding them together")
     parser.add_argument('-max', '--ac_max', default=1.3)
     parser.add_argument('-min', '--ac_min', default=0.7)
