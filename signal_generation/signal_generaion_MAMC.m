@@ -10,14 +10,14 @@ fd=0.1; %Code Rate
 freqsep=0.15;  %Frequency Interval
 N_code=20;  %Number of Symbols
 length = 3500;%Final length of signals
-N_samples_m = 300000;%Number of overlapped samples
-num_classes = 9;
+N_samples_m = 100000;%Number of overlapped samples
+num_classes = 10;
 
 fc_max = 1.1;
 fc_min = 0.9;
 
-Ac_max = 1.05;
-Ac_min = 0.95;
+Ac_max = 1.1;
+Ac_min = 0.9;
 
 snr_max = 15;
 snr_min = 0;
@@ -89,9 +89,14 @@ for i=1:N_samples_m
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;
+            case 10
+                yr=msk(N_code,fs,fd,fcc(j),1);
+                yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
+                y(j,:) = yr(1, shift(j):shift(j)+length-1);
+                y_train(i, class_i(j))=1;
         end
     end
-    y_r = sum(y, 1);
+    y_r = mapminmax(sum(y, 1));
     snr = randi([snr_min, snr_max],1);
     x_train(i,:) = awgn(y_r, snr, 'measured','db');
 end
@@ -102,4 +107,4 @@ snr = [snr_min, snr_max];
 fprintf('Saving...\n');
 x_train = x_train';
 y_train = y_train';
-save('../samples/dataset_MAMC','x_train','y_train','Ac','fc', 'snr','length','-v7.3')
+save(strcat('../samples/dataset_MAMC_',num2str(num_classes)),'x_train','y_train','Ac','fc', 'snr','length','-v7.3')
