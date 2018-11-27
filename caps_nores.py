@@ -92,7 +92,7 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    #model = multi_gpu_model(model, gpus=2)
+    #model = multi_gpu_model(model, gpus=2)   #多GPU
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
                   loss= margin_loss,
                   metrics={})
@@ -103,6 +103,8 @@ def train(model, data, args):
                      validation_split = 0.1, callbacks=[checkpoint, lr_decay])
     return hist.history
 
+def get_accuracy(cm):
+    return [float(cm[i,i]/np.sum(cm[i,:])) for i in xrange(args.num_classes)]
 
     
 
@@ -111,22 +113,23 @@ if __name__ == "__main__":
     parser.add_argument('--epochs', default=20, type=int)
     parser.add_argument('--batch_size', default=50, type=int)
     parser.add_argument('--lr', default=0.002, type=float,
-                        help="Initial learning rate")
+                        help="初始学习率")
     parser.add_argument('--lr_decay', default=0.92, type=float,
-                        help="The value multiplied by lr at each epoch. Set a larger value for larger epochs")
+                        help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
-                        help="Number of iterations used in routing algorithm. should > 0")
+                        help="routing迭代次数")
     parser.add_argument('-sf', '--save_file', default='0_15_3500_16.h5',
-                        help="Name of saved weight file")
+                        help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
-                        help="Test only model")
+                        help="测试模式，设为非0值激活，跳过训练")
     parser.add_argument('-l', '--load', default=1,type=int,
-                        help="load weight file or not")
+                        help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
-                        help="plot training loss after finished if plot==1")
+                        help="训练结束后画出loss变化曲线，设为1激活")
     parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_10.mat',
-                        help="name of dataset that needs loading")
-    parser.add_argument('-n', '--num_classes', default=10)
+                        help="需要载入的数据文件，MATLAB -v7.3格式")
+    parser.add_argument('-n', '--num_classes', default=10,
+                        help="类别数")
     parser.add_argument('-dc', '--dim_capsule', default=16)
     parser.add_argument('-tm', '--target_max', default=2, type=int)
     args = parser.parse_args()
@@ -134,19 +137,19 @@ if __name__ == "__main__":
     
     K.set_image_data_format('channels_last')
     ''' 
-    data = sio.loadmat(args.dataset, appendmat=False)
+    data = sio.loadmat(args.dataset, appendmat=False)  #matlab 非-v7.3
     for i in data:
         locals()[i] = data[i]
     del data
     del i
     '''
     '''
-    with np.load(args.dataset) as data:
+    with np.load(args.dataset) as data: #npz格式
         x_train = data['x_train']
     with np.load(args.dataset) as data:
         y_train = data['y_train']
     '''
-    with h5py.File(args.dataset, 'r') as data:
+    with h5py.File(args.dataset, 'r') as data:  #载入数据（Matlab -v7.3格式）
         for i in data:
             locals()[i] = data[i].value
     
@@ -171,26 +174,40 @@ if __name__ == "__main__":
         print('Loading %s' %args.save_file)
       
     print('-'*30 + 'Begin: test' + '-'*30)
-    y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    y_pred1 = (np.sign(y_pred1-0.5)+1)/2
+    y_pred = model.predict(x_train, batch_size=args.batch_size,verbose=1)
+    y_pred = (np.sign(y_pred-0.5)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
-    idx_yp = np.sum(y_pred1, axis = 1)
-    idx_mc = []
-    y_pred = np.zeros([y_pred1.shape[0],args.target_max])
-    y_true = y_pred
+    idx_yp = np.sum(y_pred, axis = 1)
+    idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1]) #混淆矩阵
+    idx = np.arange(0, 10)
     for i in xrange(y_pred.shape[0]):
         if np.mod(i,2000)==0:
             print(i)
-        _, y_t = tf.nn.top_k(y_train, idx_yt[i])
-        _, y_p = tf.nn.top_k(y_pred1, idx_yt[i])
-        y_t = K.eval(y_t)
-        y_t.sort(axis = 0)
-        y_p = K.eval(y_p)
-        y_p.sort(axis = 0)
-        y_true[i,0:idx_yt[i]] = y_t
-        y_pred[i,0:idx_yp[i]] = y_p
+        y_p = y_pred[i,:]
+        y_t = y_train[i,:]
+        y_ref = y_p + y_t
         
-    #print('Train acc:', np.sum(y_pred1_tr == y_1)/np.float(y_1.shape[0]))
+        idx1 = idx[y_ref==2]
+        if idx1.shape[0]!=0:
+            y_p[idx1] = 0
+            y_t[idx1] = 0
+            y_ref[idx1] = 0
+            idx_cm[idx1, idx1] += 1
+        if np.sum(y_ref)!=0:
+            idx2_p = idx[y_p==1]
+            idx2_t = idx[y_t==1]    
+            max_tar = np.max([idx2_p.shape[0],idx2_t.shape[0]])
+            re_p = np.ones(max_tar - idx2_p.shape[0],dtype = int)*num_classes
+            re_t = np.ones(max_tar - idx2_t.shape[0],dtype = int)*num_classes
+        
+            idx2_p = np.concatenate([idx2_p, re_p])
+            idx2_t = np.concatenate([idx2_t, re_t])
+        
+            idx_cm[idx2_p, idx2_t] += 1
+
+    acc = get_accuracy(idx_cm)   #准确率
+    pm = np.sum(idx_cm[num_classes+1,:])/y_pred.shape[0]  #漏检 Missing Alarm
+    pf = np.sum(idx_cm[:, numclasses+1])/y_pred.shape[0]  #虚警 False Alarm
     print('-' * 30 + 'End: test' + '-' * 30)   
 
     
