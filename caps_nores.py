@@ -11,7 +11,7 @@ from capsulelayers2 import CapsuleLayer, PrimaryCap, Length, Mask
 from keras import callbacks
 from keras.layers.normalization import BatchNormalization as BN
 import argparse
-#import scipy.io as sio
+import scipy.io as sio
 import h5py
 from keras.layers.advanced_activations import ELU
 
@@ -106,12 +106,14 @@ def train(model, data, args):
 def get_accuracy(cm):
     return [float(cm[i,i]/np.sum(cm[i,:])) for i in xrange(args.num_classes)]
 
+
+
     
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
     parser.add_argument('--epochs', default=20, type=int)
-    parser.add_argument('--batch_size', default=50, type=int)
+    parser.add_argument('--batch_size', default=20, type=int)
     parser.add_argument('--lr', default=0.002, type=float,
                         help="初始学习率")
     parser.add_argument('--lr_decay', default=0.92, type=float,
@@ -174,8 +176,9 @@ if __name__ == "__main__":
         print('Loading %s' %args.save_file)
       
     print('-'*30 + 'Begin: test' + '-'*30)
-    y_pred = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    y_pred = (np.sign(y_pred-0.5)+1)/2
+    
+    y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
+    y_pred = (np.sign(y_pred1-0.5)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1]) #混淆矩阵
@@ -197,8 +200,8 @@ if __name__ == "__main__":
             idx2_p = idx[y_p==1]
             idx2_t = idx[y_t==1]    
             max_tar = np.max([idx2_p.shape[0],idx2_t.shape[0]])
-            re_p = np.ones(max_tar - idx2_p.shape[0],dtype = int)*num_classes
-            re_t = np.ones(max_tar - idx2_t.shape[0],dtype = int)*num_classes
+            re_p = np.ones(max_tar - idx2_p.shape[0],dtype = int)*args.num_classes
+            re_t = np.ones(max_tar - idx2_t.shape[0],dtype = int)*args.num_classes
         
             idx2_p = np.concatenate([idx2_p, re_p])
             idx2_t = np.concatenate([idx2_t, re_t])
@@ -206,11 +209,11 @@ if __name__ == "__main__":
             idx_cm[idx2_p, idx2_t] += 1
 
     acc = get_accuracy(idx_cm)   #准确率
-    pm = np.sum(idx_cm[num_classes+1,:])/y_pred.shape[0]  #漏检 Missing Alarm
-    pf = np.sum(idx_cm[:, numclasses+1])/y_pred.shape[0]  #虚警 False Alarm
-    print('-' * 30 + 'End: test' + '-' * 30)   
+    pm = np.sum(idx_cm[args.num_classes,:])/y_pred.shape[0]  #漏检 Missing Alarm
+    pf = np.sum(idx_cm[:, args.num_classes])/y_pred.shape[0]  #虚警 False Alarm
+    print('-' * 30 + 'End  : test' + '-' * 30)   
 
-    
+    sio.savemat('cm.mat', {'cm':idx_cm})
     
 '''
     from keras.utils import plot_model
