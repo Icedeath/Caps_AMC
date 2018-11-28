@@ -224,7 +224,7 @@ if __name__ == "__main__":
     pf = np.sum(idx_cm[:, args.num_classes])/y_pred.shape[0]  #虚警 False Alarm
     print('-' * 30 + 'End  : test' + '-' * 30)   
 
-    sio.savemat('cm.mat', {'cm':idx_cm})
+    sio.savemat('final_output.mat', {'cm':idx_cm, 'y_pred1':y_pred1, 'y_train':y_train})
     
 '''
     from keras.utils import plot_model
