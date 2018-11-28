@@ -85,6 +85,17 @@ def margin_loss(y_true, y_pred, margin = 0.4, downweight = 0.5):
                     K.greater(y_pred, -margin), 'float32') * K.pow((y_pred + margin), 2)
     return 0.5 * positive_cost + downweight * 0.5 * negative_cost
 
+def threshold_loss(y_true, y_pred, margin = 0.4, threshold = 0, diver = 0.05):
+    y_pred = y_pred - 0.5
+    positive_cost = y_true * K.cast(
+                    K.less(y_pred, threshold + diver), 'float32') * K.pow((y_pred - threshold - diver), 2)
+    
+    negative_cost = (1 - y_true) * K.cast(
+                    K.greater(y_pred, -threshold - diver), 'float32') * K.pow((y_pred + threshold + diver), 2)
+
+    
+    return 0.5 * positive_cost + 0.5 * negative_cost
+
 
 def train(model, data, args):
     (x_train, y_train) = data
@@ -94,7 +105,7 @@ def train(model, data, args):
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
     #model = multi_gpu_model(model, gpus=2)   #多GPU
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
-                  loss= margin_loss,
+                  loss= margin_loss + 2*threshold_loss,
                   metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
