@@ -5,7 +5,7 @@ import numpy as np
 from keras import layers, models, optimizers
 from keras import backend as K
 from keras.layers import Lambda
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import tensorflow as tf
 from capsulelayers2 import CapsuleLayer, PrimaryCap, Length, Mask
 from keras import callbacks
@@ -14,7 +14,11 @@ import argparse
 import scipy.io as sio
 import h5py
 from keras.layers.advanced_activations import ELU
-
+'''
+import os
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"]="1,2"
+'''
 K.set_image_data_format('channels_last')
 
 
@@ -77,23 +81,25 @@ def CapsNet(input_shape, n_class, routings):
     return model
 
 
-def margin_loss(y_true, y_pred, margin = 0.4, downweight = 0.5):
+def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0, diver = 0.05):
     y_pred = y_pred - 0.5
     positive_cost = y_true * K.cast(
                     K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
     negative_cost = (1 - y_true) * K.cast(
                     K.greater(y_pred, -margin), 'float32') * K.pow((y_pred + margin), 2)
-    return 0.5 * positive_cost + downweight * 0.5 * negative_cost
+    positive_threshold_cost = y_true * K.cast(
+                    K.less(y_pred, threshold + diver), 'float32') * K.pow((y_pred - threshold - diver), 2)
+    negative_threshold_cost = (1 - y_true) * K.cast(
+                    K.greater(y_pred, -threshold - diver), 'float32') * K.pow((y_pred + threshold + diver), 2)
+    return 0.5 * positive_cost + 0.5 * negative_cost + positive_threshold_cost + negative_threshold_cost
 
-def threshold_loss(y_true, y_pred, margin = 0.4, threshold = 0, diver = 0.05):
+
+def margin_loss1(y_true, y_pred, margin = 0.4):
     y_pred = y_pred - 0.5
     positive_cost = y_true * K.cast(
-                    K.less(y_pred, threshold + diver), 'float32') * K.pow((y_pred - threshold - diver), 2)
-    
+                    K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
     negative_cost = (1 - y_true) * K.cast(
-                    K.greater(y_pred, -threshold - diver), 'float32') * K.pow((y_pred + threshold + diver), 2)
-
-    
+                    K.greater(y_pred, -margin), 'float32') * K.pow((y_pred + margin), 2)
     return 0.5 * positive_cost + 0.5 * negative_cost
 
 
@@ -103,9 +109,9 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    #model = multi_gpu_model(model, gpus=2)   #多GPU
+    model = multi_gpu_model(model, gpus=2)   #多GPU
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
-                  loss= margin_loss + 2*threshold_loss,
+                  loss= margin_loss,
                   metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
@@ -123,7 +129,7 @@ def get_accuracy(cm):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
-    parser.add_argument('--epochs', default=20, type=int)
+    parser.add_argument('--epochs', default=25, type=int)
     parser.add_argument('--batch_size', default=20, type=int)
     parser.add_argument('--lr', default=0.002, type=float,
                         help="初始学习率")
@@ -133,9 +139,9 @@ if __name__ == "__main__":
                         help="routing迭代次数")
     parser.add_argument('-sf', '--save_file', default='0_15_3500_16.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=1,type=int,
+    parser.add_argument('-t', '--test', default=0,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
-    parser.add_argument('-l', '--load', default=1,type=int,
+    parser.add_argument('-l', '--load', default=0,type=int,
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
