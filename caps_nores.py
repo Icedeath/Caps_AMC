@@ -81,7 +81,7 @@ def CapsNet(input_shape, n_class, routings):
     return model
 
 
-def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0, diver = 0.05):
+def margin_loss(y_true, y_pred, margin = 0.4, threshold = 1, diver = 0.1):
     y_pred = y_pred - 0.5
     positive_cost = y_true * K.cast(
                     K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
@@ -91,7 +91,7 @@ def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0, diver = 0.05):
                     K.less(y_pred, threshold + diver), 'float32') * K.pow((y_pred - threshold - diver), 2)
     negative_threshold_cost = (1 - y_true) * K.cast(
                     K.greater(y_pred, -threshold - diver), 'float32') * K.pow((y_pred + threshold + diver), 2)
-    return 0.5 * positive_cost + 0.5 * negative_cost + positive_threshold_cost + negative_threshold_cost
+    return 0.5 * positive_cost + 0.5 * negative_cost + 5*positive_threshold_cost + 5*negative_threshold_cost
 
 
 def margin_loss1(y_true, y_pred, margin = 0.4):
@@ -109,7 +109,7 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    model = multi_gpu_model(model, gpus=2)   #多GPU
+    model = multi_gpu_model(model, gpus=2)
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
                   loss= margin_loss,
                   metrics={})
@@ -139,9 +139,9 @@ if __name__ == "__main__":
                         help="routing迭代次数")
     parser.add_argument('-sf', '--save_file', default='0_15_3500_16.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=0,type=int,
+    parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
-    parser.add_argument('-l', '--load', default=0,type=int,
+    parser.add_argument('-l', '--load', default=1,type=int,
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     with np.load(args.dataset) as data:
         y_train = data['y_train']
     '''
-    with h5py.File(args.dataset, 'r') as data:  #载入数据（Matlab -v7.3格式）
+    with h5py.File(args.dataset, 'r') as data:
         for i in data:
             locals()[i] = data[i].value
     
@@ -195,13 +195,14 @@ if __name__ == "__main__":
     print('-'*30 + 'Begin: test' + '-'*30)
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    y_pred = (np.sign(y_pred1-0.5)+1)/2
+    sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    y_pred = (np.sign(y_pred1-0.65)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
-    idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1]) #混淆矩阵
+    idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
     idx = np.arange(0, 10)
     for i in xrange(y_pred.shape[0]):
-        if np.mod(i,2000)==0:
+        if np.mod(i,20000)==0:
             print(i)
         y_p = y_pred[i,:]
         y_t = y_train[i,:]
@@ -225,12 +226,12 @@ if __name__ == "__main__":
         
             idx_cm[idx2_p, idx2_t] += 1
 
-    acc = get_accuracy(idx_cm)   #准确率
-    pm = np.sum(idx_cm[args.num_classes,:])/y_pred.shape[0]  #漏检 Missing Alarm
-    pf = np.sum(idx_cm[:, args.num_classes])/y_pred.shape[0]  #虚警 False Alarm
+    acc = get_accuracy(idx_cm) 
+    pm = np.sum(idx_cm[args.num_classes,:])/y_pred.shape[0]  # Missing Alarm
+    pf = np.sum(idx_cm[:, args.num_classes])/y_pred.shape[0]  #False Alarm
     print('-' * 30 + 'End  : test' + '-' * 30)   
 
-    sio.savemat('final_output.mat', {'cm':idx_cm, 'y_pred1':y_pred1, 'y_train':y_train})
+    sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
     
 '''
     from keras.utils import plot_model
