@@ -21,7 +21,7 @@ idx_yp = np.sum(y_pred, axis = 1)
 idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
 idx = np.arange(0, 10)
 for i in xrange(y_pred.shape[0]):
-    if np.mod(i,20000)==0:
+    if np.mod(i,200000)==0:
         print(i)
     y_p = y_pred[i,:]
     y_t = y_train[i,:]
@@ -46,8 +46,8 @@ for i in xrange(y_pred.shape[0]):
         idx_cm[idx2_p, idx2_t] += 1
 
 acc = get_accuracy(idx_cm) 
-pm = np.sum(idx_cm[args.num_classes,:])/y_pred.shape[0]  # Missing Alarm
-pf = np.sum(idx_cm[:, args.num_classes])/y_pred.shape[0]  #False Alarm
+pm = np.sum(idx_cm[args.num_classes,:])/np.sum(idx_cm)  # Missing Alarm
+pf = np.sum(idx_cm[:, args.num_classes])/np.sum(idx_cm)  #False Alarm
 print('-' * 30 + 'End  : test' + '-' * 30)   
 
 print(pf)

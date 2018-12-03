@@ -81,7 +81,7 @@ def CapsNet(input_shape, n_class, routings):
     return model
 
 
-def margin_loss(y_true, y_pred, margin = 0.4, threshold = 1, diver = 0.1):
+def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.1, diver = 0.1):
     y_pred = y_pred - 0.5
     positive_cost = y_true * K.cast(
                     K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
