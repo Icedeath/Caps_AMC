@@ -227,8 +227,8 @@ if __name__ == "__main__":
             idx_cm[idx2_p, idx2_t] += 1
 
     acc = get_accuracy(idx_cm) 
-    pm = np.sum(idx_cm[args.num_classes,:])/y_pred.shape[0]  # Missing Alarm
-    pf = np.sum(idx_cm[:, args.num_classes])/y_pred.shape[0]  #False Alarm
+    pm = np.sum(idx_cm[args.num_classes,:])/np.sum(idx_cm)  # Missing Alarm
+    pf = np.sum(idx_cm[:, args.num_classes])/np.sum(idx_cm)  #False Alarm
     print('-' * 30 + 'End  : test' + '-' * 30)   
 
     sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
