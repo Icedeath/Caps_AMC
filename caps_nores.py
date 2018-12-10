@@ -121,7 +121,7 @@ def train(model, data, args):
     return hist.history
 
 def get_accuracy(cm):
-    return [float(cm[i,i]/np.sum(cm[i,:])) for i in xrange(args.num_classes)]
+    return [float(cm[i,i]/np.sum(cm[:,i])) for i in xrange(args.num_classes)]
 
 
 
