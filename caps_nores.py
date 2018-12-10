@@ -91,7 +91,7 @@ def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.1, diver = 0.1):
                     K.less(y_pred, threshold + diver), 'float32') * K.pow((y_pred - threshold - diver), 2)
     negative_threshold_cost = (1 - y_true) * K.cast(
                     K.greater(y_pred, -threshold - diver), 'float32') * K.pow((y_pred + threshold + diver), 2)
-    return 0.5 * positive_cost + 0.5 * negative_cost + 5*positive_threshold_cost + 5*negative_threshold_cost
+    return 0.5 * positive_cost + 0.5 * negative_cost + 2*positive_threshold_cost + 2*negative_threshold_cost
 
 
 def margin_loss1(y_true, y_pred, margin = 0.4):
@@ -130,14 +130,14 @@ def get_accuracy(cm):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
     parser.add_argument('--epochs', default=25, type=int)
-    parser.add_argument('--batch_size', default=20, type=int)
+    parser.add_argument('--batch_size', default=16, type=int)
     parser.add_argument('--lr', default=0.002, type=float,
                         help="初始学习率")
     parser.add_argument('--lr_decay', default=0.92, type=float,
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='0_15_3500_16.h5',
+    parser.add_argument('-sf', '--save_file', default='3500_015_92.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                         help="训练结束后画出loss变化曲线，设为1激活")
     parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_10.mat',
                         help="需要载入的数据文件，MATLAB -v7.3格式")
-    parser.add_argument('-n', '--num_classes', default=10,
+    parser.add_argument('-n', '--num_classes', default=8,
                         help="类别数")
     parser.add_argument('-dc', '--dim_capsule', default=16)
     parser.add_argument('-tm', '--target_max', default=2, type=int)
@@ -196,11 +196,11 @@ if __name__ == "__main__":
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
     sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
-    y_pred = (np.sign(y_pred1-0.65)+1)/2
+    y_pred = (np.sign(y_pred1-0.62)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
-    idx = np.arange(0, 10)
+    idx = np.arange(0, args.num_classes)
     for i in xrange(y_pred.shape[0]):
         if np.mod(i,20000)==0:
             print(i)
@@ -231,7 +231,7 @@ if __name__ == "__main__":
     pf = np.sum(idx_cm[:, args.num_classes])/np.sum(idx_cm)  #False Alarm
     print('-' * 30 + 'End  : test' + '-' * 30)   
 
-    sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    #sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
     
 '''
     from keras.utils import plot_model
