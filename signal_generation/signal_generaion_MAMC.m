@@ -8,10 +8,10 @@ fc=3.5; %Carrier Frequency
 fs=20;  %Sample Frequency
 fd=0.1; %Code Rate
 freqsep=0.15;  %Frequency Interval
-N_code=20;  %Number of Symbols
-length = 3500;%Final length of signals
-N_samples_m = 100000;%Number of overlapped samples
-num_classes = 10;
+N_code=17;  %Number of Symbols
+length = 3000;%Final length of signals
+N_samples_m = 500000;%Number of overlapped samples
+num_classes = 8;
 
 fc_max = 1.1;
 fc_min = 0.9;
@@ -22,7 +22,7 @@ Ac_min = 0.9;
 snr_max = 15;
 snr_min = 0;
 max_targets = 2;
-min_targets = 2;
+min_targets = 1;
 
 max_shift = fs*N_code/fd - length;
 
@@ -60,36 +60,26 @@ for i=1:N_samples_m
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;
             case 4
-                yr=fsk8(N_code,fcc(j),fs,fd,freqsep,1);
-                yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
-                y(j,:) = yr(1, shift(j):shift(j)+length-1);
-                y_train(i, class_i(j))=1;
-            case 5
                 yr=psk2(N_code,fcc(j),fs,fd,1);
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;
-            case 6
+            case 5
                 yr=psk4(N_code,fcc(j),fs,fd,1);
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;
-            case 7
-                yr=psk8(N_code,fcc(j),fs,fd,1);
-                yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
-                y(j,:) = yr(1, shift(j):shift(j)+length-1);
-                y_train(i, class_i(j))=1;
-            case 8
+            case 6
                 yr=qam16(N_code,fcc(j),fs,fd,1);
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;
-            case 9
+            case 7
                 yr=qam64(N_code,fcc(j),fs,fd,1);
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
                 y_train(i, class_i(j))=1;
-            case 10
+            case 8
                 yr=msk(N_code,fs,fd,fcc(j),1);
                 yr = yr/sqrt(sum(yr.^2)/(fs*N_code/fd))*Acc(j);
                 y(j,:) = yr(1, shift(j):shift(j)+length-1);
