@@ -1,5 +1,5 @@
 clear all
-load final_output
+load final_output_noLT
 figure()
 label = 0;
 x=plot_pdf(label,y_train,y_pred1,'r');
@@ -10,7 +10,7 @@ grid on
 
 
 label = 1;
-x=plot_pdf(label,y_train,y_pred1,'b');
+x=plot_pdf(label,y_train,y_pred1,'b^');
 
 
 legend('{\nu_0}','{\nu_1}')
@@ -23,7 +23,7 @@ x=plot_pdf(label,y_train,y_pred1,'r');
 hold on
 grid on
 label = 1;
-x=plot_pdf(label,y_train,y_pred1,'b');
+x=plot_pdf(label,y_train,y_pred1,'b^');
 xlim([0.4,0.8])
 ylim([0,0.0015])
 

@@ -8,18 +8,24 @@ Created on Fri Nov 23 17:25:51 2018
 import scipy.io as sio
 import numpy as np
 
-data = sio.loadmat('final_output.mat', appendmat=False)  #matlab 非-v7.3
+def get_accuracy(cm):
+    return [float(cm[i,i]/np.sum(cm[0:8,i])) for i in xrange(num_classes)]
+
+data = sio.loadmat('final_output_noLT.mat', appendmat=False)
 for i in data:
     locals()[i] = data[i]
 del data
 del i
-num_classes = 10
+num_classes = 8
+
+def get_accuracy(cm):
+    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,:])) for i in xrange(args.num_classes)]
 
 y_pred = (np.sign(y_pred1-0.62)+1)/2
 idx_yt = np.sum(y_train, axis = 1)
 idx_yp = np.sum(y_pred, axis = 1)
 idx_cm = np.zeros([num_classes + 1, num_classes+1])
-idx = np.arange(0, 10)
+idx = np.arange(0, num_classes)
 for i in xrange(y_pred.shape[0]):
     if np.mod(i,200000)==0:
         print(i)
@@ -46,8 +52,10 @@ for i in xrange(y_pred.shape[0]):
         idx_cm[idx2_p, idx2_t] += 1
 
 acc = get_accuracy(idx_cm) 
-pm = np.sum(idx_cm[num_classes,:])/np.sum(idx_cm)  # Missing Alarm
-pf = np.sum(idx_cm[:, num_classes])/np.sum(idx_cm)  #False Alarm
+pm = np.sum(idx_cm[args.num_classes, :])/(np.sum(
+            idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[args.num_classes,:]))  # Missing Alarm
+pf = np.sum(idx_cm[:, args.num_classes])/(np.sum(
+            idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[:,args.num_classes]))  #False Alarm
 print('-' * 30 + 'End  : test' + '-' * 30)   
 
 print(pf)

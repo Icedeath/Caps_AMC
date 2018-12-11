@@ -121,7 +121,7 @@ def train(model, data, args):
     return hist.history
 
 def get_accuracy(cm):
-    return [float(cm[i,i]/np.sum(cm[:,i])) for i in xrange(args.num_classes)]
+    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,:])) for i in xrange(args.num_classes)]
 
 
 
@@ -227,8 +227,10 @@ if __name__ == "__main__":
             idx_cm[idx2_p, idx2_t] += 1
 
     acc = get_accuracy(idx_cm) 
-    pm = np.sum(idx_cm[args.num_classes,:])/np.sum(idx_cm)  # Missing Alarm
-    pf = np.sum(idx_cm[:, args.num_classes])/np.sum(idx_cm)  #False Alarm
+    pm = np.sum(idx_cm[args.num_classes,:])/(np.sum(
+            idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[args.num_classes,:]))  # Missing Alarm
+    pf = np.sum(idx_cm[:, args.num_classes])/(np.sum(
+            idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[:,args.num_classes]))  #False Alarm
     print('-' * 30 + 'End  : test' + '-' * 30)   
 
     #sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
