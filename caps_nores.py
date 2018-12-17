@@ -81,17 +81,19 @@ def CapsNet(input_shape, n_class, routings):
     return model
 
 
-def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.1, diver = 0.1):
+def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.12):
     y_pred = y_pred - 0.5
+    t_1 = threshold+0.05
+    t_2 = threshold-0.05
     positive_cost = y_true * K.cast(
                     K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
     negative_cost = (1 - y_true) * K.cast(
                     K.greater(y_pred, -margin), 'float32') * K.pow((y_pred + margin), 2)
     positive_threshold_cost = y_true * K.cast(
-                    K.less(y_pred, threshold + diver), 'float32') * K.pow((y_pred - threshold - diver), 2)
+                    K.less(y_pred, t_1), 'float32') * K.pow((y_pred - t_1), 2)
     negative_threshold_cost = (1 - y_true) * K.cast(
-                    K.greater(y_pred, -threshold - diver), 'float32') * K.pow((y_pred + threshold + diver), 2)
-    return 0.5 * positive_cost + 0.5 * negative_cost + 2*positive_threshold_cost + 2*negative_threshold_cost
+                    K.greater(y_pred, -t_2), 'float32') * K.pow((y_pred + -t_2), 2)
+    return 0.5 * positive_cost + 0.5 * negative_cost + 0.75*positive_threshold_cost + 0.75*negative_threshold_cost
 
 
 def margin_loss1(y_true, y_pred, margin = 0.4):
@@ -121,7 +123,7 @@ def train(model, data, args):
     return hist.history
 
 def get_accuracy(cm):
-    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,:])) for i in xrange(args.num_classes)]
+    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,i])) for i in xrange(args.num_classes)]
 
 
 
