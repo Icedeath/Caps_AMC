@@ -133,13 +133,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
     parser.add_argument('--epochs', default=25, type=int)
     parser.add_argument('--batch_size', default=16, type=int)
-    parser.add_argument('--lr', default=0.002, type=float,
+    parser.add_argument('--lr', default=0.0003, type=float,
                         help="初始学习率")
-    parser.add_argument('--lr_decay', default=0.92, type=float,
+    parser.add_argument('--lr_decay', default=0.99, type=float,
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='3500_015_92.h5',
+    parser.add_argument('-sf', '--save_file', default='4500_Lt.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -147,7 +147,7 @@ if __name__ == "__main__":
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
-    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_10.mat',
+    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_test8.mat',
                         help="需要载入的数据文件，MATLAB -v7.3格式")
     parser.add_argument('-n', '--num_classes', default=8,
                         help="类别数")
@@ -191,7 +191,8 @@ if __name__ == "__main__":
             plt.show()
             plt.savefig('loss.png')
     else:
-        model.load_weights(args.save_file)
+        args.epochs=0
+        history = train(model=model, data=((x_train, y_train)), args=args)
         print('Loading %s' %args.save_file)
       
     print('-'*30 + 'Begin: test' + '-'*30)
