@@ -4,12 +4,28 @@ load acc
 cm(:,9) = cm(:,9)/(sum(sum((cm(1:8,1:8))))+sum(cm(:,9)));
 cm(9,:) = cm(9,:)/(sum(sum((cm(1:8,1:8))))+sum(cm(9,:)));
 for i=1:8
-    a=sum(cm(:,i));
+    a=sum(cm(1:8,i));
     cm(1:8,i) = cm(1:8,i)/a;
 end
 
 
 imagesc(cm);
+
 colorbar();
-ylabel('Classification result')
-xlabel('Actual result')
+ylabel('Classification result','FontName', 'Times New Roman', 'FontSize', 13)
+xlabel('Actual result','FontName', 'Times New Roman', 'FontSize', 13)
+xticklabels({'2ASK','2FSK','4FSK','BPSK','QPSK','16QAM','64QAM','MSK'})
+yticklabels({'2ASK','2FSK','4FSK','BPSK','QPSK','16QAM','64QAM','MSK'})
+
+
+for i=1:9
+    for j=1:9
+        if i==j && cm(i,j)>=0.001
+            text(i,j,num2str(cm(i,j),'%0.03f'),'HorizontalAlignment',...
+            'center','FontName', 'Times New Roman', 'FontSize', 12, 'color','black')
+        elseif cm(i,j)>=0.001
+            text(i,j,num2str(cm(i,j),'%0.03f'),'HorizontalAlignment',...
+            'center','FontName', 'Times New Roman', 'FontSize', 12, 'color','white')
+        end
+    end
+end
