@@ -1,10 +1,10 @@
 clear all
-load accuracyAll_3000
-acc_3 = averAccAll;
+load hunxiao3000
+acc_3 = newAver;
 pf_3 = pfAll;
 pm_3 = pmAll;
-load accuracyAll_4500
-acc_5 = averAccAll;
+load hunxiao4500
+acc_5 = newAver;
 pf_5 = pfAll;
 pm_5 = pmAll;
 
@@ -24,22 +24,22 @@ set(h2,{'LineWidth'},{1});
 h3=plot(n, acc_5, 'r^-');
 set(h3,{'LineWidth'},{1});
 legend('AMPT-based AMC in [10]','\it{P_{cc}} \rmwithout \it{L^t}', '\it{P_{cc}} \rmwith \it{L^t}')
-xlabel('Composite SNR/dB')
+xlabel('Composite SNR (dB)')
 ylabel('\it{P_{cc}}')
-%%%%%%%%%%%%%%%%%%%%%%%%%pf and pm%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
-% figure()
-% hold on
-% grid on
-% h4=plot(n, pf_3, 'k*-');
-% set(h4,{'LineWidth'},{0.8});
-% h5=plot(n, pf_5, 'ks-');
-% set(h5,{'LineWidth'},{0.8});
-% h6=plot(n, pm_3, 'r+-');
-% set(h6,{'LineWidth'},{0.8});
-% h7=plot(n, pm_5, 'rd-');
-% set(h7,{'LineWidth'},{0.8});
-% 
-% legend('\it{p_{f}} \rmwithout \it{L^t}', '\it{p_{f}} \rmwith \it{L^t}',...
-%     '\it{p_{m}} \rmwithout \it{L^t}', '\it{p_{m}} \rmwith \it{L^t}')
-% xlabel('Composite SNR/dB')
-% ylabel('\it{p_{f}} \rmand \it{p_m}')
+%%%%%%%%%%%%%%%%%%%%%%%%pf and pm%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%55
+figure()
+hold on
+grid on
+h4=plot(n, pf_3, 'm*-');
+set(h4,{'LineWidth'},{0.8});
+h5=plot(n, pf_5, 'ms-');
+set(h5,{'LineWidth'},{0.8});
+h6=plot(n, pm_3, 'b+-');
+set(h6,{'LineWidth'},{0.8});
+h7=plot(n, pm_5, 'bd-');
+set(h7,{'LineWidth'},{0.8});
+
+legend('\it{p_{f}} \rmwithout \it{L^t}', '\it{p_{f}} \rmwith \it{L^t}',...
+    '\it{p_{m}} \rmwithout \it{L^t}', '\it{p_{m}} \rmwith \it{L^t}')
+xlabel('Composite SNR (dB)')
+ylabel('\it{p_{f}} \rmand \it{p_m}')

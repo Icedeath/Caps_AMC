@@ -61,3 +61,5 @@ print('-' * 30 + 'End  : test' + '-' * 30)
 print(pf)
 print(pm)
 print(np.mean(acc))
+
+sio.savemat('acc.mat', {'cm':idx_cm, 'acc':acc,'pm':pm,'pf':pf})

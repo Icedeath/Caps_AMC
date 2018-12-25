@@ -1,6 +1,5 @@
-load accuracyAll_4500
-acc = accAll-0.001;
-acc= acc';
+load hunxiao4500
+acc = newAccAll;
 n = 0:15;
 figure()
 hold on 
@@ -22,8 +21,8 @@ set(h7,{'LineWidth'},{0.8});
 h8=plot(n, acc(8,:), 'b>-');
 set(h8,{'LineWidth'},{0.8});
 xlim([0,15])
-ylim([0.90,1])
-xlabel('SNR/dB')
+ylim([0.75,1])
+xlabel('Composite SNR (dB)')
 ylabel('{P_{cc}}')
 
 legend('2ASK', '2FSK', '4FSK', 'BPSK', 'QPSK', '16QAM', '64QAM', 'MSK')

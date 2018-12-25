@@ -8,9 +8,9 @@ fc=3.5; %Carrier Frequency
 fs=20;  %Sample Frequency
 fd=0.1; %Code Rate
 freqsep=0.15;  %Frequency Interval
-N_code=17;  %Number of Symbols
-length = 3000;%Final length of signals
-N_samples_m = 500000;%Number of overlapped samples
+N_code=25;  %Number of Symbols
+length = 4500;%Final length of signals
+N_samples_m = 200000;%Number of overlapped samples
 num_classes = 8;
 
 fc_max = 1.1;
