@@ -126,7 +126,16 @@ def get_accuracy(cm):
     return [float(cm[i,i]/np.sum(cm[0:args.num_classes,i])) for i in xrange(args.num_classes)]
 
 
+def save_single():
+    model = CapsNet(input_shape=x_train.shape[1:], n_class=args.num_classes, routings=args.routings)
 
+    p_model = multi_gpu_model(model, gpus=2)
+    p_model.compile(optimizer=optimizers.Adam(lr=args.lr),
+                  loss= margin_loss,
+                  metrics={})    
+    name = args.save_file.rstrip('.h5') + 'sGPU' + '.h5'
+    p_model.load_weights(args.save_file)
+    model.save_weights(name)
     
 
 if __name__ == "__main__":
@@ -178,8 +187,9 @@ if __name__ == "__main__":
     
 
     model = CapsNet(input_shape=x_train.shape[1:], n_class=args.num_classes, routings=args.routings)
-        
-
+    save_single()
+    
+    
     if args.test == 0:    
         history = train(model=model, data=((x_train, y_train)), args=args)
         if args.plot == 1:    
