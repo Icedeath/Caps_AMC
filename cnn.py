@@ -69,22 +69,19 @@ def CapsNet(input_shape, n_class, routings):
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     
-    primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=(1,3),
-                             strides=1, padding='same')
-    digitcaps = CapsuleLayer(num_capsule=n_class, dim_capsule=args.dim_capsule, routings=routings,
-                             name='digitcaps')(primarycaps)
-    out_caps = Length(name='capsnet')(digitcaps)
+    conv1 = layers.GlobalAveragePooling2D(data_format='channels_first')(conv1)
+    output = layers.Dense(8, activation = 'sigmoid')(conv1)
     
     
-
-    model = models.Model(x, out_caps)
+    
+    model = models.Model(x, output)
     return model
 
 
 def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.12):
     y_pred = y_pred - 0.5
-    t_1 = threshold+0.05
-    t_2 = threshold-0.05
+    t_1 = threshold + 0.05
+    t_2 = threshold - 0.05
     positive_cost = y_true * K.cast(
                     K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
     negative_cost = (1 - y_true) * K.cast(
@@ -148,9 +145,9 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/5000_Lt_3.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/5000_Lt_3_CNN.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=0,type=int,
+    parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
     parser.add_argument('-l', '--load', default=1,type=int,
                         help="是否载入模型，设为1激活")
@@ -183,8 +180,8 @@ if __name__ == "__main__":
         for i in data:
             locals()[i] = data[i].value
             
-    x_train = x_train[10000:785000,:]
-    y_train = y_train[10000:785000, :]
+    x_train = x_train[0:785000, :]
+    y_train = y_train[0:785000, :]
     
     x_train = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], 1)
     
@@ -212,7 +209,7 @@ if __name__ == "__main__":
     print('-'*30 + 'Begin: test' + '-'*30)
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    sio.savemat('final_output_cnn.mat', {'y_pred1':y_pred1, 'y_train':y_train})
     y_pred = (np.sign(y_pred1-0.62)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
