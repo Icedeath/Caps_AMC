@@ -113,13 +113,13 @@ def train(model, data, args):
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
     model = multi_gpu_model(model, gpus=2)
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
-                  loss= margin_loss1,
+                  loss= margin_loss,
                   metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
         print('Loading %s' %args.save_file)
     hist = model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs,
-                     validation_split = 0.001, callbacks=[checkpoint, lr_decay])
+                     validation_split = 0.02, callbacks=[checkpoint, lr_decay])
     return hist.history
 
 def get_accuracy(cm):
@@ -148,7 +148,7 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/5000_Lt_3.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/4500_noLt_2.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=0,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -156,12 +156,12 @@ if __name__ == "__main__":
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
-    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8_3.mat',
+    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8.mat',
                         help="需要载入的数据文件，MATLAB -v7.3格式")
     parser.add_argument('-n', '--num_classes', default=8,
                         help="类别数")
     parser.add_argument('-dc', '--dim_capsule', default=16)
-    parser.add_argument('-tm', '--target_max', default=3, type=int)
+    parser.add_argument('-tm', '--target_max', default=2, type=int)
     args = parser.parse_args()
     print(args)
     
@@ -183,8 +183,8 @@ if __name__ == "__main__":
         for i in data:
             locals()[i] = data[i].value
             
-    x_train = x_train[10000:785000,:]
-    y_train = y_train[10000:785000, :]
+    #x_train = x_train[10000:785000,:]
+    #y_train = y_train[10000:785000, :]
     
     x_train = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], 1)
     
@@ -218,7 +218,7 @@ if __name__ == "__main__":
     idx_yp = np.sum(y_pred, axis = 1)
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
     idx = np.arange(0, args.num_classes)
-    for i in xrange(y_pred.shape[0]):
+    for i in range(y_pred.shape[0]):
         if np.mod(i,20000)==0:
             print(i)
         y_p = y_pred[i,:]
