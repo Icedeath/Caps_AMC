@@ -14,11 +14,12 @@ import argparse
 import scipy.io as sio
 import h5py
 from keras.layers.advanced_activations import ELU
-'''
+
 import os
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
-'''
+#os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
+os.environ["CUDA_VISIBLE_DEVICES"]="0"
+
 K.set_image_data_format('channels_last')
 
 
@@ -81,10 +82,10 @@ def CapsNet(input_shape, n_class, routings):
     return model
 
 
-def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.12):
+def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.04):
     y_pred = y_pred - 0.5
-    t_1 = threshold+0.05
-    t_2 = threshold-0.05
+    t_1 = threshold+0.1
+    t_2 = threshold-0.1
     positive_cost = y_true * K.cast(
                     K.less(y_pred, margin), 'float32') * K.pow((y_pred - margin), 2)
     negative_cost = (1 - y_true) * K.cast(
@@ -111,19 +112,20 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    model = multi_gpu_model(model, gpus=2)
+    #model = multi_gpu_model(model, gpus=2)
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
                   loss= margin_loss,
                   metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
         print('Loading %s' %args.save_file)
+
     hist = model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs,
                      validation_split = 0.02, callbacks=[checkpoint, lr_decay])
     return hist.history
 
 def get_accuracy(cm):
-    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,i])) for i in xrange(args.num_classes)]
+    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,i])) for i in range(args.num_classes)]
 
 
 def save_single():
@@ -140,23 +142,23 @@ def save_single():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
-    parser.add_argument('--epochs', default=30, type=int)
-    parser.add_argument('--batch_size', default=32, type=int)
-    parser.add_argument('--lr', default=0.0003, type=float,
+    parser.add_argument('--epochs', default=5, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
+    parser.add_argument('--lr', default=0.000015, type=float,
                         help="初始学习率")
     parser.add_argument('--lr_decay', default=0.99, type=float,
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/4500_noLt_2.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/Lt_2_sGPU.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=0,type=int,
+    parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
     parser.add_argument('-l', '--load', default=1,type=int,
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
-    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8.mat',
+    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8_te.mat',
                         help="需要载入的数据文件，MATLAB -v7.3格式")
     parser.add_argument('-n', '--num_classes', default=8,
                         help="类别数")
@@ -195,7 +197,7 @@ if __name__ == "__main__":
     
     if args.test == 0:    
         history = train(model=model, data=((x_train, y_train)), args=args)
-        save_single()
+        #save_single()
         if args.plot == 1:    
             train_loss = np.array(history['loss'])
             val_loss = np.array(history['val_loss'])
@@ -212,7 +214,7 @@ if __name__ == "__main__":
     print('-'*30 + 'Begin: test' + '-'*30)
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    sio.savemat('final_output.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    sio.savemat('final_output_noLT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
     y_pred = (np.sign(y_pred1-0.62)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)

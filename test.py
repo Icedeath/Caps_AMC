@@ -11,7 +11,7 @@ import numpy as np
 def get_accuracy(cm):
     return [float(cm[i,i]/np.sum(cm[0:8,i])) for i in xrange(num_classes)]
 
-data = sio.loadmat('final_output.mat', appendmat=False)
+data = sio.loadmat('final_output_noLT.mat', appendmat=False)
 for i in data:
     locals()[i] = data[i]
 del data
@@ -19,14 +19,14 @@ del i
 num_classes = 8
 
 def get_accuracy(cm):
-    return [float(cm[i,i]/np.sum(cm[0:num_classes,i])) for i in xrange(num_classes)]
+    return [float(cm[i,i]/np.sum(cm[0:num_classes,i])) for i in range(num_classes)]
 
-y_pred = (np.sign(y_pred1-0.62)+1)/2
+y_pred = (np.sign(y_pred1-0.538)+1)/2
 idx_yt = np.sum(y_train, axis = 1)
 idx_yp = np.sum(y_pred, axis = 1)
 idx_cm = np.zeros([num_classes + 1, num_classes+1])
 idx = np.arange(0, num_classes)
-for i in xrange(y_pred.shape[0]):
+for i in range(y_pred.shape[0]):
     if np.mod(i,100000)==0:
         print(i)
     y_p = y_pred[i,:]
