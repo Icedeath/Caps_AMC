@@ -16,59 +16,59 @@ import h5py
 from keras.layers.advanced_activations import ELU
 
 import os
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+#os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
 #os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
-os.environ["CUDA_VISIBLE_DEVICES"]="0"
+#os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 K.set_image_data_format('channels_last')
 
 
 def CapsNet(input_shape, n_class, routings):
     x = layers.Input(shape=input_shape)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,2), padding='same')(x)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,1), padding='same',dilation_rate = 5)(x)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,1), padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
-    
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,2), padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
     
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
+    
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
+    #conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    #conv1 = ELU(alpha=0.5)(conv1)
+    #conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
+    #conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    #conv1 = ELU(alpha=0.5)(conv1)
+    #conv1 = BN()(conv1)
     
     primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=(1,3),
                              strides=1, padding='same')
@@ -112,9 +112,9 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    #model = multi_gpu_model(model, gpus=2)
+    model = multi_gpu_model(model, gpus=2)
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
-                  loss= margin_loss,
+                  loss= margin_loss1,
                   metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
@@ -142,28 +142,28 @@ def save_single():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
-    parser.add_argument('--epochs', default=5, type=int)
+    parser.add_argument('--epochs', default=20, type=int)
     parser.add_argument('--batch_size', default=64, type=int)
-    parser.add_argument('--lr', default=0.000015, type=float,
+    parser.add_argument('--lr', default=0.0003, type=float,
                         help="初始学习率")
     parser.add_argument('--lr_decay', default=0.99, type=float,
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/Lt_2_sGPU.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/noLt_3.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=1,type=int,
+    parser.add_argument('-t', '--test', default=0,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
-    parser.add_argument('-l', '--load', default=1,type=int,
+    parser.add_argument('-l', '--load', default=0,type=int,
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
-    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8_te.mat',
+    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8.mat',
                         help="需要载入的数据文件，MATLAB -v7.3格式")
     parser.add_argument('-n', '--num_classes', default=8,
                         help="类别数")
     parser.add_argument('-dc', '--dim_capsule', default=16)
-    parser.add_argument('-tm', '--target_max', default=2, type=int)
+    #parser.add_argument('-tm', '--target_max', default=3, type=int)
     args = parser.parse_args()
     print(args)
     
@@ -185,8 +185,8 @@ if __name__ == "__main__":
         for i in data:
             locals()[i] = data[i].value
             
-    #x_train = x_train[10000:785000,:]
-    #y_train = y_train[10000:785000, :]
+    #x_train = x_train[:,0:4500]
+    #y_train = y_train[:, :]
     
     x_train = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], 1)
     
@@ -197,7 +197,7 @@ if __name__ == "__main__":
     
     if args.test == 0:    
         history = train(model=model, data=((x_train, y_train)), args=args)
-        #save_single()
+        save_single()
         if args.plot == 1:    
             train_loss = np.array(history['loss'])
             val_loss = np.array(history['val_loss'])
@@ -215,7 +215,7 @@ if __name__ == "__main__":
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
     sio.savemat('final_output_noLT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
-    y_pred = (np.sign(y_pred1-0.62)+1)/2
+    y_pred = (np.sign(y_pred1-0.535)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
@@ -251,7 +251,9 @@ if __name__ == "__main__":
     pf = np.sum(idx_cm[:, args.num_classes])/(np.sum(
             idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[:,args.num_classes]))  #False Alarm
     print('-' * 30 + 'End  : test' + '-' * 30)   
-    
+    print(pf)
+    print(pm)
+    print(np.mean(acc))
 '''
     from keras.utils import plot_model
     plot_model(model, to_file='model.png',show_shapes = True)

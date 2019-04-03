@@ -21,7 +21,7 @@ num_classes = 8
 def get_accuracy(cm):
     return [float(cm[i,i]/np.sum(cm[0:num_classes,i])) for i in range(num_classes)]
 
-y_pred = (np.sign(y_pred1-0.538)+1)/2
+y_pred = (np.sign(y_pred1-0.535)+1)/2
 idx_yt = np.sum(y_train, axis = 1)
 idx_yp = np.sum(y_pred, axis = 1)
 idx_cm = np.zeros([num_classes + 1, num_classes+1])
