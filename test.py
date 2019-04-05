@@ -11,7 +11,7 @@ import numpy as np
 def get_accuracy(cm):
     return [float(cm[i,i]/np.sum(cm[0:8,i])) for i in xrange(num_classes)]
 
-data = sio.loadmat('final_output_noLT.mat', appendmat=False)
+data = sio.loadmat('final_output_LT.mat', appendmat=False)
 for i in data:
     locals()[i] = data[i]
 del data

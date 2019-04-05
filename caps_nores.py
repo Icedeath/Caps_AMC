@@ -93,8 +93,8 @@ def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.04):
     positive_threshold_cost = y_true * K.cast(
                     K.less(y_pred, t_1), 'float32') * K.pow((y_pred - t_1), 2)
     negative_threshold_cost = (1 - y_true) * K.cast(
-                    K.greater(y_pred, -t_2), 'float32') * K.pow((y_pred + -t_2), 2)
-    return 0.5 * positive_cost + 0.5 * negative_cost + 0.75*positive_threshold_cost + 0.75*negative_threshold_cost
+                    K.greater(y_pred, -t_2), 'float32') * K.pow((y_pred + t_2), 2)
+    return 0.5 * positive_cost + 0.5 * negative_cost + 0.5*positive_threshold_cost + 0.5*negative_threshold_cost
 
 
 def margin_loss1(y_true, y_pred, margin = 0.4):
@@ -114,7 +114,7 @@ def train(model, data, args):
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
     model = multi_gpu_model(model, gpus=2)
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
-                  loss= margin_loss1,
+                  loss= margin_loss,
                   metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/noLt_3.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/Lt_3.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=0,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     print('-'*30 + 'Begin: test' + '-'*30)
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    sio.savemat('final_output_noLT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    sio.savemat('final_output_LT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
     y_pred = (np.sign(y_pred1-0.535)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
