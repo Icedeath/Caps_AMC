@@ -112,15 +112,15 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    if args.load == 1:
-        model.load_weights(args.save_file)
-        print('Loading %s' %args.save_file)
+
     model = multi_gpu_model(model, gpus=2)
 
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
                   loss= margin_loss,
                   metrics={})
-
+    if args.load == 1:
+        model.load_weights(args.save_file)
+        print('Loading %s' %args.save_file)
 
     hist = model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs,
                      validation_split = 0.02, callbacks=[checkpoint, lr_decay])
@@ -152,7 +152,7 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/noLt_2_sGPU.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/noLt_3sGPU.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -216,7 +216,7 @@ if __name__ == "__main__":
     print('-'*30 + 'Begin: test' + '-'*30)
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    sio.savemat('final_output_noLT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    sio.savemat('final_output_noLT_3_.mat', {'y_pred1':y_pred1, 'y_train':y_train})
     y_pred = (np.sign(y_pred1-0.52)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
