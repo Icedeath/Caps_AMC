@@ -113,7 +113,7 @@ def train(model, data, args):
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
 
-    model = multi_gpu_model(model, gpus=2)
+    #model = multi_gpu_model(model, gpus=2)
 
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
                   loss= margin_loss,
@@ -152,7 +152,7 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/noLt_3sGPU.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/Lt_2.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -187,8 +187,8 @@ if __name__ == "__main__":
         for i in data:
             locals()[i] = data[i].value
             
-    #x_train = x_train[:,0:4500]
-    #y_train = y_train[:, :]
+    x_train = x_train[:,0:4500]
+    y_train = y_train[:, :]
     
     x_train = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], 1)
     
