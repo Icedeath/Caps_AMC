@@ -25,50 +25,50 @@ K.set_image_data_format('channels_last')
 
 def CapsNet(input_shape, n_class, routings):
     x = layers.Input(shape=input_shape)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,1), padding='same',dilation_rate = 5)(x)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,2), padding='same',dilation_rate = 1)(x)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,2), padding='same',dilation_rate = 1)(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
-    
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,1), padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
     
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
+    
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    #conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
-    #conv1 = ELU(alpha=0.5)(conv1)
-    #conv1 = BN()(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    #conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
-    #conv1 = ELU(alpha=0.5)(conv1)
-    #conv1 = BN()(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 1)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
     
     primarycaps = PrimaryCap(conv1, dim_capsule=8, n_channels=32, kernel_size=(1,3),
                              strides=1, padding='same')
@@ -82,7 +82,7 @@ def CapsNet(input_shape, n_class, routings):
     return model
 
 
-def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.04):
+def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.02):
     y_pred = y_pred - 0.5
     t_1 = threshold+0.1
     t_2 = threshold-0.1
@@ -94,7 +94,7 @@ def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.04):
                     K.less(y_pred, t_1), 'float32') * K.pow((y_pred - t_1), 2)
     negative_threshold_cost = (1 - y_true) * K.cast(
                     K.greater(y_pred, -t_2), 'float32') * K.pow((y_pred + t_2), 2)
-    return 0.5 * positive_cost + 0.5 * negative_cost + 0.5*positive_threshold_cost + 0.5*negative_threshold_cost
+    return 0.5 * positive_cost + 0.5 * negative_cost + 0.75*positive_threshold_cost + 0.75*negative_threshold_cost
 
 
 def margin_loss1(y_true, y_pred, margin = 0.4):
@@ -112,13 +112,15 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-    model = multi_gpu_model(model, gpus=2)
-    model.compile(optimizer=optimizers.Adam(lr=args.lr),
-                  loss= margin_loss,
-                  metrics={})
     if args.load == 1:
         model.load_weights(args.save_file)
         print('Loading %s' %args.save_file)
+    model = multi_gpu_model(model, gpus=2)
+
+    model.compile(optimizer=optimizers.Adam(lr=args.lr),
+                  loss= margin_loss,
+                  metrics={})
+
 
     hist = model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs,
                      validation_split = 0.02, callbacks=[checkpoint, lr_decay])
@@ -141,20 +143,20 @@ def save_single():
    
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
-    parser.add_argument('--epochs', default=20, type=int)
+    parser = argparse.ArgumentParser(description="Capsule Network on Multi-signal AMC.")
+    parser.add_argument('--epochs', default=10, type=int)
     parser.add_argument('--batch_size', default=64, type=int)
-    parser.add_argument('--lr', default=0.0003, type=float,
+    parser.add_argument('--lr', default=0.0001, type=float,
                         help="初始学习率")
     parser.add_argument('--lr_decay', default=0.99, type=float,
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/Lt_3.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/noLt_2_sGPU.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=0,type=int,
+    parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
-    parser.add_argument('-l', '--load', default=0,type=int,
+    parser.add_argument('-l', '--load', default=1,type=int,
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
@@ -214,8 +216,8 @@ if __name__ == "__main__":
     print('-'*30 + 'Begin: test' + '-'*30)
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
-    sio.savemat('final_output_LT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
-    y_pred = (np.sign(y_pred1-0.535)+1)/2
+    sio.savemat('final_output_noLT.mat', {'y_pred1':y_pred1, 'y_train':y_train})
+    y_pred = (np.sign(y_pred1-0.52)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
