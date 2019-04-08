@@ -238,7 +238,8 @@ if __name__ == "__main__":
         pm.append(pm1)
         acc_aver.append(np.mean(acc1))
     print('Saving results...')        
-    sio.savemat('acc.mat', {'acc':acc, 'acc_aver':acc_aver, 'pf':pf, 'pm': pm})
+    file_save = 'acc_'+args.save_file.rstrip('_sGPU.h5').lstrip('./weights')+'.mat'
+    sio.savemat(file_save, {'acc':acc, 'acc_aver':acc_aver, 'pf':pf, 'pm': pm})
 
     print('-' * 30 + 'End  : test' + '-' * 30)   
 '''
