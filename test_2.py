@@ -177,7 +177,7 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/Lt_2.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/Lt_2sGPU.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -211,7 +211,7 @@ if __name__ == "__main__":
             for i in data:
                 locals()[i] = data[i].value
                 
-        print('Building model...')        
+        print('Building model...')  
         x_train = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], 1)
     
         model = CapsNet(input_shape=x_train.shape[1:], n_class=args.num_classes, routings=args.routings)
