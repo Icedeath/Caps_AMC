@@ -23,9 +23,10 @@ import h5py
 from keras.layers.advanced_activations import ELU
 
 import os
-#os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
+
 #os.environ["CUDA_VISIBLE_DEVICES"]="0,1"
-#os.environ["CUDA_VISIBLE_DEVICES"]="1"
+os.environ["CUDA_VISIBLE_DEVICES"]="1"
 
 K.set_image_data_format('channels_last')
 
@@ -119,7 +120,10 @@ def train(model, data, args):
     checkpoint = callbacks.ModelCheckpoint(args.save_file, monitor='val_loss', verbose=1, save_best_only=True, 
                                   save_weights_only=True, mode='auto', period=1)
     lr_decay = callbacks.LearningRateScheduler(schedule=lambda epoch: args.lr * (args.lr_decay ** epoch))
-
+    if args.load == 1:
+        model.load_weights(args.save_file)
+        print('Loading %s' %args.save_file)
+    #model = multi_gpu_model(model, gpus=2)
     model.compile(optimizer=optimizers.Adam(lr=args.lr),
                   loss= margin_loss,
                   metrics={})
@@ -138,8 +142,8 @@ def get_cm(y_train, y_pred1, args):
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
     idx = np.arange(0, args.num_classes)
     for i in range(y_pred.shape[0]):
-        if np.mod(i,20000)==0:
-            print(i)
+        #if np.mod(i,20000)==0:
+            #print(i)
         y_p = y_pred[i,:]
         y_t = y_train[i,:]
         y_ref = y_p + y_t
@@ -169,7 +173,7 @@ def get_accuracy(cm):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on Multi-signal AMC.")
-    parser.add_argument('--epochs', default=10, type=int)
+    parser.add_argument('--epochs', default=0, type=int)
     parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--lr', default=0.0001, type=float,
                         help="初始学习率")
@@ -177,7 +181,7 @@ if __name__ == "__main__":
                         help="学习率衰减")
     parser.add_argument('-r', '--routings', default=3, type=int,
                         help="routing迭代次数")
-    parser.add_argument('-sf', '--save_file', default='./weights/Lt_2sGPU.h5',
+    parser.add_argument('-sf', '--save_file', default='./weights/noLt_2sGPU.h5',
                         help="权重文件名称")
     parser.add_argument('-t', '--test', default=1,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
@@ -207,7 +211,7 @@ if __name__ == "__main__":
     for s in snr:
         args.dataset = 'dataset_MAMC' + str(s) + '_8.mat'
         print('Current SNR = %d dB, loading %s...' %(s, args.dataset))
-        with h5py.File(args.dataset, 'r') as data:
+        with h5py.File('D:/4500/'+args.dataset, 'r') as data:
             for i in data:
                 locals()[i] = data[i].value
                 
@@ -229,7 +233,7 @@ if __name__ == "__main__":
         pf1 = np.sum(idx_cm[:, args.num_classes])/(np.sum(
             idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[:,args.num_classes]))  #False Alarm
    
-        print('False alarm: %.6f% ' %pf1)
+        print('False alarm: %.6f ' %pf1)
         print('Missing alarm: %.6f' %pm1)
         print('Accuracy: %.6f' %np.mean(acc1))
         

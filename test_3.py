@@ -169,7 +169,7 @@ def get_accuracy(cm):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on Multi-signal AMC.")
-    parser.add_argument('--epochs', default=10, type=int)
+    parser.add_argument('--epochs', default=0, type=int)
     parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--lr', default=0.0001, type=float,
                         help="初始学习率")
@@ -229,7 +229,7 @@ if __name__ == "__main__":
         pf1 = np.sum(idx_cm[:, args.num_classes])/(np.sum(
             idx_cm[0:args.num_classes,0:args.num_classes])+np.sum(idx_cm[:,args.num_classes]))  #False Alarm
    
-        print('False alarm: %.6f% ' %pf1)
+        print('False alarm: %.6f ' %pf1)
         print('Missing alarm: %.6f' %pm1)
         print('Accuracy: %.6f' %np.mean(acc1))
         
