@@ -14,8 +14,8 @@ imagesc(cm);
 colorbar();
 ylabel('Classification result','FontName', 'Times New Roman', 'FontSize', 13)
 xlabel('Actual result','FontName', 'Times New Roman', 'FontSize', 13)
-xticklabels({'2ASK','2FSK','4FSK','BPSK','QPSK','16QAM','64QAM','MSK'})
-yticklabels({'2ASK','2FSK','4FSK','BPSK','QPSK','16QAM','64QAM','MSK'})
+xticklabels({'2ASK','2FSK','4FSK','BPSK','QPSK','16QAM','64QAM','MSK','N/A'})
+yticklabels({'2ASK','2FSK','4FSK','BPSK','QPSK','16QAM','64QAM','MSK','N/A'})
 
 
 for i=1:9
