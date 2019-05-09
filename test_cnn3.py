@@ -32,58 +32,50 @@ K.set_image_data_format('channels_last')
 
 def CapsNet(input_shape, n_class, routings):
     x = layers.Input(shape=input_shape)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,2), padding='same')(x)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,1), padding='same',dilation_rate = 5)(x)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,1), padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
-    
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,2), padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
     
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
+    
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
+    #conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    #conv1 = ELU(alpha=0.5)(conv1)
+    #conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     
     conv1 = layers.GlobalAveragePooling2D(data_format='channels_first')(conv1)
     output = layers.Dense(8, activation = 'sigmoid')(conv1)
-    
-    
-    
-    model = models.Model(x, output)
-    return model
 
 
 def margin_loss(y_true, y_pred, margin = 0.4, threshold = 0.02):

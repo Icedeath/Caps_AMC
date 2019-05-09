@@ -24,48 +24,45 @@ K.set_image_data_format('channels_last')
 
 def CapsNet(input_shape, n_class, routings):
     x = layers.Input(shape=input_shape)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,2), padding='same')(x)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,1), padding='same',dilation_rate = 5)(x)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=64, kernel_size=(1,3), strides=(1,1), padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
-    
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=96, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=64, kernel_size=(1,12), strides=(1,2), padding='same',dilation_rate = 1)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
     
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=128, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=96, kernel_size=(1,9), strides=1, padding='same',dilation_rate = 4)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
+    
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
+    conv1 = ELU(alpha=0.5)(conv1)
+    conv1 = BN()(conv1)
+    conv1 = layers.Conv2D(filters=128, kernel_size=(1,6), strides=1, padding='same',dilation_rate = 3)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
+    #conv1 = layers.Conv2D(filters=192, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
+    #conv1 = ELU(alpha=0.5)(conv1)
+    #conv1 = BN()(conv1)
     conv1 = layers.MaxPooling2D((1, 2), strides=(1, 2))(conv1)
 
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
-    conv1 = ELU(alpha=0.5)(conv1)
-    conv1 = BN()(conv1)
-    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same')(conv1)
+    conv1 = layers.Conv2D(filters=256, kernel_size=(1,3), strides=1, padding='same',dilation_rate = 2)(conv1)
     conv1 = ELU(alpha=0.5)(conv1)
     conv1 = BN()(conv1)
     
@@ -120,7 +117,7 @@ def train(model, data, args):
     return hist.history
 
 def get_accuracy(cm):
-    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,i])) for i in xrange(args.num_classes)]
+    return [float(cm[i,i]/np.sum(cm[0:args.num_classes,i])) for i in range(args.num_classes)]
 
 
 def save_single():
@@ -137,7 +134,7 @@ def save_single():
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Capsule Network on MNIST.")
-    parser.add_argument('--epochs', default=30, type=int)
+    parser.add_argument('--epochs', default=5, type=int)
     parser.add_argument('--batch_size', default=32, type=int)
     parser.add_argument('--lr', default=0.0003, type=float,
                         help="初始学习率")
@@ -147,9 +144,9 @@ if __name__ == "__main__":
                         help="routing迭代次数")
     parser.add_argument('-sf', '--save_file', default='./weights/5000_Lt_3_CNN.h5',
                         help="权重文件名称")
-    parser.add_argument('-t', '--test', default=1,type=int,
+    parser.add_argument('-t', '--test', default=0,type=int,
                         help="测试模式，设为非0值激活，跳过训练")
-    parser.add_argument('-l', '--load', default=1,type=int,
+    parser.add_argument('-l', '--load', default=0,type=int,
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
@@ -210,12 +207,12 @@ if __name__ == "__main__":
     
     y_pred1 = model.predict(x_train, batch_size=args.batch_size,verbose=1)
     sio.savemat('final_output_cnn.mat', {'y_pred1':y_pred1, 'y_train':y_train})
-    y_pred = (np.sign(y_pred1-0.62)+1)/2
+    y_pred = (np.sign(y_pred1-0.52)+1)/2
     idx_yt = np.sum(y_train, axis = 1)
     idx_yp = np.sum(y_pred, axis = 1)
     idx_cm = np.zeros([args.num_classes + 1, args.num_classes+1])
     idx = np.arange(0, args.num_classes)
-    for i in xrange(y_pred.shape[0]):
+    for i in range(y_pred.shape[0]):
         if np.mod(i,20000)==0:
             print(i)
         y_p = y_pred[i,:]
