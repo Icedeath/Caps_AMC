@@ -116,7 +116,7 @@ def train(model, data, args):
         model.load_weights(args.save_file)
         print('Loading %s' %args.save_file)
     hist = model.fit(x_train, y_train, batch_size=args.batch_size, epochs=args.epochs,
-                     validation_split = 0.001, callbacks=[checkpoint, lr_decay])
+                     validation_split = 0.1, callbacks=[checkpoint, lr_decay])
     return hist.history
 
 def get_accuracy(cm):
@@ -153,7 +153,7 @@ if __name__ == "__main__":
                         help="是否载入模型，设为1激活")
     parser.add_argument('-p', '--plot', default=0,type=int,
                         help="训练结束后画出loss变化曲线，设为1激活")
-    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8_3.mat',
+    parser.add_argument('-d', '--dataset', default='./samples/dataset_MAMC_8.mat',
                         help="需要载入的数据文件，MATLAB -v7.3格式")
     parser.add_argument('-n', '--num_classes', default=8,
                         help="类别数")
@@ -180,8 +180,8 @@ if __name__ == "__main__":
         for i in data:
             locals()[i] = data[i].value
             
-    x_train = x_train[0:785000, :]
-    y_train = y_train[0:785000, :]
+    #x_train = x_train[0:785000, :]
+    #y_train = y_train[0:785000, :]
     
     x_train = x_train.reshape(x_train.shape[0], 1, x_train.shape[1], 1)
     
